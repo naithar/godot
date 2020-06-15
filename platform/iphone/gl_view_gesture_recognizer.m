@@ -45,7 +45,7 @@
 - (void)delayTouches:(NSSet *)touches andEvent:(UIEvent *)event {
     [delayTimer fire];
     
-    delayedTouches = [touches copy];
+    delayedTouches = touches;
     delayedEvent = event;
     
     delayTimer = [NSTimer
@@ -69,23 +69,39 @@
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    [self delayTouches:touches andEvent:event];
+    NSSet *cleared = [self clearTouches:touches phase:UITouchPhaseBegan];
+    [self delayTouches:cleared andEvent:event];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
     if (delayTimer) return;
     
-    [self.view touchesMoved:touches withEvent:event];
+    NSSet *cleared = [self clearTouches:touches phase:UITouchPhaseMoved];
+    [self.view touchesMoved:cleared withEvent:event];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     [delayTimer fire];
-    [self.view touchesEnded:touches withEvent:event];
+    
+    NSSet *cleared = [self clearTouches:touches phase:UITouchPhaseEnded];
+    [self.view touchesEnded:cleared withEvent:event];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
     [delayTimer fire];
     [self.view touchesCancelled:touches withEvent:event];
 };
+
+- (NSSet *)clearTouches:(NSSet *)touches phase:(UITouchPhase)phaseToSave {
+    NSMutableSet *cleared = [touches mutableCopy];
+    
+    for (UITouch *touch in touches) {
+        if (touch.phase != phaseToSave) {
+            [cleared removeObject:touch];
+        }
+    }
+    
+    return cleared;
+}
 
 @end
