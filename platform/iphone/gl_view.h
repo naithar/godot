@@ -70,9 +70,9 @@
 	BOOL delegateSetup;
 	BOOL active;
 	float screen_scale;
-    
-    // Delay gesture recognizer
-    GLViewGestureRecognizer *delayGestureRecognizer;
+
+	// Delay gesture recognizer
+	GLViewGestureRecognizer *delayGestureRecognizer;
 }
 
 @property(nonatomic, assign) id<GLViewDelegate> delegate;

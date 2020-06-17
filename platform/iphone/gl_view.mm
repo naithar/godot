@@ -269,7 +269,7 @@ static void clear_touches() {
 	active = FALSE;
 	if ((self = [super initWithCoder:coder])) {
 		self = [self initGLES];
-        [self initGestureRecognizer];
+		[self initGestureRecognizer];
 	}
 	return self;
 }
@@ -323,8 +323,8 @@ static void clear_touches() {
 }
 
 - (void)initGestureRecognizer {
-    delayGestureRecognizer = [[GLViewGestureRecognizer alloc] init];
-    [self addGestureRecognizer:delayGestureRecognizer];
+	delayGestureRecognizer = [[GLViewGestureRecognizer alloc] init];
+	[self addGestureRecognizer:delayGestureRecognizer];
 }
 
 - (id<GLViewDelegate>)delegate {
@@ -510,8 +510,6 @@ static void clear_touches() {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
 
 			UITouch *touch = [tlist objectAtIndex:i];
-//			if (touch.phase != UITouchPhaseBegan)
-//				continue;
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			CGPoint touchPoint = [touch locationInView:self];
@@ -528,8 +526,6 @@ static void clear_touches() {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
 
 			UITouch *touch = [tlist objectAtIndex:i];
-//			if (touch.phase != UITouchPhaseMoved)
-//				continue;
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			CGPoint touchPoint = [touch locationInView:self];
@@ -546,8 +542,6 @@ static void clear_touches() {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
 
 			UITouch *touch = [tlist objectAtIndex:i];
-//			if (touch.phase != UITouchPhaseEnded)
-//				continue;
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			remove_touch(touch);
@@ -649,7 +643,7 @@ static void clear_touches() {
 	if (self != nil) {
 		self = [self initGLES];
 		printf("after init gles %p\n", self);
-        [self initGestureRecognizer];
+		[self initGestureRecognizer];
 	}
 	init_touches();
 	self.multipleTouchEnabled = YES;
