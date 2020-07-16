@@ -28,18 +28,17 @@ matrix:
           packages:
             - openjdk-8-jdk
 
-# TODO: iOS MoltenVK support
-
-#    - name: iOS export template (debug, Clang)
-#      stage: build
-#      env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
-#      os: osx
-#      osx_image: xcode11.5
-#      compiler: clang
-#      addons:
-#        homebrew:
-#          packages:
-#            - scons
+    - name: iOS export template (debug, Clang)
+      stage: build
+      env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
+      os: osx
+      osx_image: xcode11.5
+      compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - scons
+          update: true
 
     - name: JavaScript export template (release, emscripten latest)
       stage: build
