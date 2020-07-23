@@ -34,24 +34,24 @@
 #include "core/math/camera_matrix.h"
 #include "servers/rendering/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
 #include "servers/rendering/rasterizer_rd/shaders/bokeh_dof.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/copy.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/copy.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/copy_to_fb.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/cube_to_dp.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/cubemap_downsampler.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/cubemap_filter.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/resolve.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/roughness_limiter.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/specular_merge.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/ssao.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/ssao_minify.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/subsurface_scattering.glsl.gen.h"
-#include "servers/rendering/rasterizer_rd/shaders/tonemap.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/specular_merge.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/ssao.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/ssao_minify.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/subsurface_scattering.glsl.gen.h"
+//#include "servers/rendering/rasterizer_rd/shaders/tonemap.glsl.gen.h"
 
 #include "servers/rendering_server.h"
 
@@ -106,7 +106,7 @@ class RasterizerEffectsRD {
 
 	struct Copy {
 		CopyPushConstant push_constant;
-		CopyShaderRD shader;
+//		CopyShaderRD shader;
 		RID shader_version;
 		RID pipelines[COPY_MODE_MAX];
 
@@ -192,7 +192,7 @@ class RasterizerEffectsRD {
 	 */
 	struct Tonemap {
 		TonemapPushConstant push_constant;
-		TonemapShaderRD shader;
+//		TonemapShaderRD shader;
 		RID shader_version;
 		RenderPipelineVertexFormatCacheRD pipelines[TONEMAP_MODE_MAX];
 	} tonemap;
@@ -214,7 +214,7 @@ class RasterizerEffectsRD {
 
 	struct LuminanceReduce {
 		LuminanceReducePushConstant push_constant;
-		LuminanceReduceShaderRD shader;
+//		LuminanceReduceShaderRD shader;
 		RID shader_version;
 		RID pipelines[LUMINANCE_REDUCE_MAX];
 	} luminance_reduce;
@@ -330,15 +330,15 @@ class RasterizerEffectsRD {
 
 	struct SSAO {
 		SSAOMinifyPushConstant minify_push_constant;
-		SsaoMinifyShaderRD minify_shader;
+//		SsaoMinifyShaderRD minify_shader;
 		RID minify_shader_version;
 
 		SSAOGatherPushConstant gather_push_constant;
-		SsaoShaderRD gather_shader;
+//		SsaoShaderRD gather_shader;
 		RID gather_shader_version;
 
 		SSAOBlurPushConstant blur_push_constant;
-		SsaoBlurShaderRD blur_shader;
+//		SsaoBlurShaderRD blur_shader;
 		RID blur_shader_version;
 
 		RID pipelines[SSAO_MAX];
@@ -412,7 +412,7 @@ class RasterizerEffectsRD {
 	 */
 
 	struct SpecularMerge {
-		SpecularMergeShaderRD shader;
+//		SpecularMergeShaderRD shader;
 		RID shader_version;
 		RenderPipelineVertexFormatCacheRD pipelines[SPECULAR_MERGE_MAX];
 
@@ -446,7 +446,7 @@ class RasterizerEffectsRD {
 
 	struct ScreenSpaceReflection {
 		ScreenSpaceReflectionPushConstant push_constant;
-		ScreenSpaceReflectionShaderRD shader;
+//		ScreenSpaceReflectionShaderRD shader;
 		RID shader_version;
 		RID pipelines[SCREEN_SPACE_REFLECTION_MAX];
 
@@ -472,7 +472,7 @@ class RasterizerEffectsRD {
 
 	struct ScreenSpaceReflectionFilter {
 		ScreenSpaceReflectionFilterPushConstant push_constant;
-		ScreenSpaceReflectionFilterShaderRD shader;
+//		ScreenSpaceReflectionFilterShaderRD shader;
 		RID shader_version;
 		RID pipelines[SCREEN_SPACE_REFLECTION_FILTER_MAX];
 	} ssr_filter;
@@ -489,7 +489,7 @@ class RasterizerEffectsRD {
 
 	struct ScreenSpaceReflectionScale {
 		ScreenSpaceReflectionScalePushConstant push_constant;
-		ScreenSpaceReflectionScaleShaderRD shader;
+//		ScreenSpaceReflectionScaleShaderRD shader;
 		RID shader_version;
 		RID pipeline;
 	} ssr_scale;
@@ -510,7 +510,7 @@ class RasterizerEffectsRD {
 
 	struct SubSurfaceScattering {
 		SubSurfaceScatteringPushConstant push_constant;
-		SubsurfaceScatteringShaderRD shader;
+//		SubsurfaceScatteringShaderRD shader;
 		RID shader_version;
 		RID pipelines[3]; //3 quality levels
 	} sss;
