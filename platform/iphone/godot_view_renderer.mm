@@ -44,7 +44,6 @@
 
 @interface GodotViewRenderer ()
 
-@property(assign, nonatomic) BOOL hasFinishedLocaleSetup;
 @property(assign, nonatomic) BOOL hasFinishedProjectDataSetup;
 @property(assign, nonatomic) BOOL hasStartedMain;
 @property(assign, nonatomic) BOOL hasFinishedSetup;
@@ -58,10 +57,9 @@
 		return NO;
 	}
 
-	if (!self.hasFinishedLocaleSetup) {
-		[self setupLocaleAndUUID];
-		return YES;
-	}
+	if (!OS::get_singleton()) {
+        exit(0);
+    }
 
 	if (!self.hasFinishedProjectDataSetup) {
 		[self setupProjectData];
@@ -79,43 +77,15 @@
 	return NO;
 }
 
-- (void)setupLocaleAndUUID {
-	self.hasFinishedLocaleSetup = YES;
-
-	if (!OS::get_singleton()) {
-		exit(0);
-	}
-
-	NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
-	OSIPhone::get_singleton()->set_locale(String::utf8([locale_code UTF8String]));
-
-	NSString *uuid;
-	if ([[UIDevice currentDevice] respondsToSelector:@selector(identifierForVendor)]) {
-		uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
-	} else {
-		// before iOS 6, so just generate an identifier and store it
-		uuid = [[NSUserDefaults standardUserDefaults] objectForKey:@"identiferForVendor"];
-		if (!uuid) {
-			CFUUIDRef cfuuid = CFUUIDCreate(NULL);
-			uuid = [(NSString *)CFUUIDCreateString(NULL, cfuuid) autorelease];
-			CFRelease(cfuuid);
-			[[NSUserDefaults standardUserDefaults] setObject:uuid forKey:@"identifierForVendor"];
-		}
-	}
-
-	OSIPhone::get_singleton()->set_unique_id(String::utf8([uuid UTF8String]));
-}
-
 - (void)setupProjectData {
 	self.hasFinishedProjectDataSetup = YES;
 
 	Main::setup2();
 
-	// this might be necessary before here
-	NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
-	for (NSString *key in dict) {
-		NSObject *value = [dict objectForKey:key];
-		String ukey = String::utf8([key UTF8String]);
+	NSDictionary *infoPlistDictionary = [[NSBundle mainBundle] infoDictionary];
+	for (NSString *key in infoPlistDictionary) {
+		NSObject *value = infoPlistDictionary[key];
+		String settings_key = String::utf8([key UTF8String]);
 
 		// we need a NSObject to Variant conversor
 
@@ -123,15 +93,14 @@
 			NSString *str = (NSString *)value;
 			String uval = String::utf8([str UTF8String]);
 
-			ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
+			ProjectSettings::get_singleton()->set("Info.plist/" + settings_key, uval);
 
 		} else if ([value isKindOfClass:[NSNumber class]]) {
 			NSNumber *n = (NSNumber *)value;
 			double dval = [n doubleValue];
 
-			ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
-		};
-		// do stuff
+			ProjectSettings::get_singleton()->set("Info.plist/" + settings_key, dval);
+		}
 	}
 }
 
