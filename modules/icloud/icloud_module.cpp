@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.h                                                    */
+/*  icloud_module.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#include "icloud_module.h"
 
-@class GodotView;
-@class GodotNativeVideoView;
+#include "core/engine.h"
 
-@interface ViewController : UIViewController
+#include "icloud.h"
 
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
+ICloud *icloud;
 
-// MARK: Native Video Player
+void register_icloud_types() {
+	icloud = memnew(ICloud);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
+}
 
-- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
-
-@end
+void unregister_icloud_types() {
+	if (icloud) {
+		memdelete(icloud);
+	}
+}

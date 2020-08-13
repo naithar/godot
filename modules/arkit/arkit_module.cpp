@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  arkit_module.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef GAME_CENTER_ENABLED
+#include "arkit_module.h"
 
-#ifndef GAME_CENTER_H
-#define GAME_CENTER_H
+#include "arkit_interface.h"
 
-#include "core/object.h"
+void register_arkit_types() {
+	// does it make sense to register the class?
 
-class GameCenter : public Object {
+	Ref<ARKitInterface> arkit_interface;
+	arkit_interface.instance();
+	ARVRServer::get_singleton()->add_interface(arkit_interface);
+}
 
-	GDCLASS(GameCenter, Object);
-
-	static GameCenter *instance;
-	static void _bind_methods();
-
-	List<Variant> pending_events;
-
-	bool authenticated;
-
-	void return_connect_error(const char *p_error_description);
-
-public:
-	Error authenticate();
-	bool is_authenticated();
-
-	Error post_score(Variant p_score);
-	Error award_achievement(Variant p_params);
-	void reset_achievements();
-	void request_achievements();
-	void request_achievement_descriptions();
-	Error show_game_center(Variant p_params);
-	Error request_identity_verification_signature();
-
-	void game_center_closed();
-
-	int get_pending_event_count();
-	Variant pop_pending_event();
-
-	static GameCenter *get_singleton();
-
-	GameCenter();
-	~GameCenter();
-};
-
-#endif
-
-#endif
+void unregister_arkit_types() {
+	// should clean itself up nicely :)
+}

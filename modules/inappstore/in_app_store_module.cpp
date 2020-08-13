@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.h                                                     */
+/*  in_app_store_module.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,5 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_arkit_types();
-void unregister_arkit_types();
+#include "in_app_store_module.h"
+
+#include "core/engine.h"
+
+#include "in_app_store.h"
+
+InAppStore *store_kit;
+
+void register_inappstore_types() {
+	store_kit = memnew(InAppStore);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("InAppStore", store_kit));
+}
+
+void unregister_inappstore_types() {
+	if (store_kit) {
+		memdelete(store_kit);
+	}
+}

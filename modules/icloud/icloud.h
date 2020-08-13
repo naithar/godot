@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef ICLOUD_ENABLED
-
 #ifndef ICLOUD_H
 #define ICLOUD_H
 
@@ -59,7 +57,5 @@ public:
 	ICloud();
 	~ICloud();
 };
-
-#endif
 
 #endif

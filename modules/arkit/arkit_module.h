@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  arkit_module.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,5 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-
-#include "arkit_interface.h"
-
-void register_arkit_types() {
-	// does it make sense to register the class?
-
-	Ref<ARKitInterface> arkit_interface;
-	arkit_interface.instance();
-	ARVRServer::get_singleton()->add_interface(arkit_interface);
-}
-
-void unregister_arkit_types() {
-	// should clean itself up nicely :)
-}
+void register_arkit_types();
+void unregister_arkit_types();
