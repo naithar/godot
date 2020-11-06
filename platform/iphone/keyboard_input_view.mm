@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.h                                                    */
+/*  keyboard_input_view.mm                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,84 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameKit/GameKit.h>
-#import <UIKit/UIKit.h>
+#import "keyboard_input_view.h"
 
-@class GodotView;
-@class GodotNativeVideoView;
-@class GodotKeyboardInputView;
+#include "core/os/keyboard.h"
+#include "os_iphone.h"
 
-@interface ViewController : UIViewController <GKGameCenterControllerDelegate>
+@interface GodotKeyboardInputView () <UITextViewDelegate>
 
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
-@property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
+@end
 
-// MARK: Native Video Player
+@implementation GodotKeyboardInputView
 
-- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
+- (instancetype)initWithCoder:(NSCoder *)coder {
+	self = [super initWithCoder:coder];
+
+	if (self) {
+		[self godot_commonInit];
+	}
+
+	return self;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame textContainer:(NSTextContainer *)textContainer {
+	self = [super initWithFrame:frame textContainer:textContainer];
+
+	if (self) {
+		[self godot_commonInit];
+	}
+
+	return self;
+}
+
+- (void)godot_commonInit {
+	self.hidden = YES;
+	self.delegate = self;
+}
+
+- (void)dealloc {
+	self.delegate = nil;
+}
+
+// MARK: Keyboard
+
+- (BOOL)canBecomeFirstResponder {
+	return YES;
+}
+
+- (BOOL)becomeFirstResponderWithString:(NSString *)existingString {
+	self.text = existingString;
+	return [self becomeFirstResponder];
+}
+
+- (BOOL)resignFirstResponder {
+	self.text = nil;
+	return [super resignFirstResponder];
+}
+
+// MARK: Delegate
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+	if (textView != self) {
+		return NO;
+	}
+
+	if (text.length == 0) {
+		for (int i = 0; i < range.length; i++) {
+			OSIPhone::get_singleton()->key(KEY_BACKSPACE, true);
+		}
+	} else {
+		String characters;
+		characters.parse_utf8([text UTF8String]);
+
+		for (int i = 0; i < characters.size(); i++) {
+			int character = characters[i];
+			OSIPhone::get_singleton()->key(character == 10 ? KEY_ENTER : character, true);
+		}
+	}
+
+	return YES;
+}
 
 @end
