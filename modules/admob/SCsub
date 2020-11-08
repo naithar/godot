@@ -1,0 +1,17 @@
+
+Import('env')
+Import("env_modules")
+
+env_admob = env_modules.Clone()
+sources = [
+           'register_types.cpp',
+           'ios/src/godotAdmob.mm',
+           'ios/src/AdmobBanner.mm',
+           'ios/src/AdmobInterstitial.mm',
+           'ios/src/AdmobRewarded.mm'
+           ]
+
+if (env["platform"] == "iphone"):
+    env_admob.Append(CCFLAGS=["-fno-objc-arc"])
+    env_admob.add_source_files(env.modules_sources, sources)
+
