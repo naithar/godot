@@ -63,13 +63,12 @@ public:
 	Error restore_purchases();
 	Error purchase(Variant p_params);
 
-	int get_pending_event_count();
-	Variant pop_pending_event();
 	void finish_transaction(String product_id);
 	void set_auto_finish_transaction(bool b);
 
-	void _post_event(Variant p_event);
 	void _record_purchase(String product_id);
+
+	void send_signal(bool is_error, Dictionary data);
 
 	static InAppStore *get_singleton();
 

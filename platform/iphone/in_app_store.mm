@@ -61,8 +61,14 @@ InAppStore *InAppStore::instance = NULL;
 
 @interface GodotProductsDelegate : NSObject <SKProductsRequestDelegate>
 
+#ifdef __cplusplus
+@property(nonatomic) InAppStore *current_inappstore;
+#endif
+
 @property(nonatomic, strong) NSMutableArray *loadedProducts;
 @property(nonatomic, strong) NSMutableArray *pendingRequests;
+
+- (instancetype)initWithInAppStore:(InAppStore *)inappstore;
 
 - (void)performRequestWithProductIDs:(NSSet *)productIDs;
 - (Error)purchaseProductWithProductID:(NSString *)productID;
@@ -72,19 +78,27 @@ InAppStore *InAppStore::instance = NULL;
 
 @implementation GodotProductsDelegate
 
-- (instancetype)init {
+- (instancetype)initWithInAppStore:(InAppStore *)inappstore {
 	self = [super init];
 
 	if (self) {
-		[self godot_commonInit];
+		[self godot_commonInit:inappstore];
 	}
 
 	return self;
 }
 
-- (void)godot_commonInit {
+- (void)dealloc {
+	NSLog(@"deinitializing products delegate");
+	self.current_inappstore = NULL;
+}
+
+- (void)godot_commonInit:(InAppStore *)inappstore {
+	NSLog(@"initializing products delegate");
+	self.current_inappstore = inappstore;
 	self.loadedProducts = [NSMutableArray new];
 	self.pendingRequests = [NSMutableArray new];
+	NSLog(@"finished initializing products delegate");
 }
 
 - (void)performRequestWithProductIDs:(NSSet *)productIDs {
@@ -110,6 +124,7 @@ InAppStore *InAppStore::instance = NULL;
 	}
 
 	if (!product) {
+		NSLog(@"products not found");
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -136,7 +151,10 @@ InAppStore *InAppStore::instance = NULL;
 	ret["result"] = "error";
 	ret["error"] = String::utf8([error.localizedDescription UTF8String]);
 
-	InAppStore::get_singleton()->_post_event(ret);
+	//	InAppStore::get_singleton()->_post_event(ret);
+	if (self.current_inappstore) {
+		self.current_inappstore->send_signal(true, ret);
+	}
 }
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response {
@@ -184,15 +202,24 @@ InAppStore *InAppStore::instance = NULL;
 
 	ret["invalid_ids"] = invalid_ids;
 
-	InAppStore::get_singleton()->_post_event(ret);
+	if (self.current_inappstore) {
+		self.current_inappstore->send_signal(false, ret);
+	}
+	//	InAppStore::get_singleton()->_post_event(ret);
 }
 
 @end
 
 @interface GodotTransactionsObserver : NSObject <SKPaymentTransactionObserver>
 
+#ifdef __cplusplus
+@property(nonatomic) InAppStore *current_inappstore;
+#endif
+
 @property(nonatomic, assign) BOOL shouldAutoFinishTransactions;
 @property(nonatomic, strong) NSMutableDictionary *pendingTransactions;
+
+- (instancetype)initWithInAppStore:(InAppStore *)inappstore;
 
 - (void)finishTransactionWithProductID:(NSString *)productID;
 - (void)reset;
@@ -201,18 +228,26 @@ InAppStore *InAppStore::instance = NULL;
 
 @implementation GodotTransactionsObserver
 
-- (instancetype)init {
+- (instancetype)initWithInAppStore:(InAppStore *)inappstore {
 	self = [super init];
 
 	if (self) {
-		[self godot_commonInit];
+		[self godot_commonInit:inappstore];
 	}
 
 	return self;
 }
 
-- (void)godot_commonInit {
+- (void)dealloc {
+	NSLog(@"deinitializing transactions observer");
+	self.current_inappstore = NULL;
+}
+
+- (void)godot_commonInit:(InAppStore *)inappstore {
+	NSLog(@"initializing transactions observer");
+	self.current_inappstore = inappstore;
 	self.pendingTransactions = [NSMutableDictionary new];
+	NSLog(@"finished initializing transactions observer");
 }
 
 - (void)finishTransactionWithProductID:(NSString *)productID {
@@ -231,7 +266,8 @@ InAppStore *InAppStore::instance = NULL;
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions {
 
-	printf("transactions updated!\n");
+	NSLog(@"transactions updated:\n%@\n", transactions);
+
 	for (SKPaymentTransaction *transaction in transactions) {
 
 		switch (transaction.transactionState) {
@@ -266,7 +302,10 @@ InAppStore *InAppStore::instance = NULL;
 				receipt_ret["sdk"] = sdk_version;
 				ret["receipt"] = receipt_ret;
 
-				InAppStore::get_singleton()->_post_event(ret);
+				//				InAppStore::get_singleton()->_post_event(ret);
+				if (self.current_inappstore) {
+					self.current_inappstore->send_signal(false, ret);
+				}
 
 				if (self.shouldAutoFinishTransactions) {
 					[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
@@ -276,14 +315,28 @@ InAppStore *InAppStore::instance = NULL;
 
 			} break;
 			case SKPaymentTransactionStateFailed: {
-				printf("status transaction failed!\n");
-				String pid = String::utf8([transaction.payment.productIdentifier UTF8String]);
+				NSLog(@"transaction: %@ has failed\n", transaction);
+
+				NSString *pidString = transaction.payment.productIdentifier;
+				NSString *errorString = transaction.error.localizedDescription;
+
+				NSLog(@"received error for pid: %@, with description: %@", pidString, errorString);
+
 				Dictionary ret;
 				ret["type"] = "purchase";
 				ret["result"] = "error";
-				ret["product_id"] = pid;
-				ret["error"] = String::utf8([transaction.error.localizedDescription UTF8String]);
-				InAppStore::get_singleton()->_post_event(ret);
+				ret["product_id"] = String::utf8([pidString UTF8String]);
+				ret["error"] = String::utf8([errorString UTF8String]);
+
+				//				InAppStore::get_singleton()->_post_event(ret);
+
+				NSLog(@"sending signal to godot");
+				if (self.current_inappstore) {
+					self.current_inappstore->send_signal(true, ret);
+				}
+				NSLog(@"finished sending signal to godot");
+
+				NSLog(@"finishing failed transaction");
 				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 			} break;
 			case SKPaymentTransactionStateRestored: {
@@ -294,7 +347,12 @@ InAppStore *InAppStore::instance = NULL;
 				ret["type"] = "restore";
 				ret["result"] = "ok";
 				ret["product_id"] = pid;
-				InAppStore::get_singleton()->_post_event(ret);
+
+				//				InAppStore::get_singleton()->_post_event(ret);
+				if (self.current_inappstore) {
+					self.current_inappstore->send_signal(false, ret);
+				}
+
 				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 			} break;
 			default: {
@@ -311,10 +369,13 @@ void InAppStore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restore_purchases"), &InAppStore::restore_purchases);
 	ClassDB::bind_method(D_METHOD("purchase"), &InAppStore::purchase);
 
-	ClassDB::bind_method(D_METHOD("get_pending_event_count"), &InAppStore::get_pending_event_count);
-	ClassDB::bind_method(D_METHOD("pop_pending_event"), &InAppStore::pop_pending_event);
+	//	ClassDB::bind_method(D_METHOD("get_pending_event_count"), &InAppStore::get_pending_event_count);
+	//	ClassDB::bind_method(D_METHOD("pop_pending_event"), &InAppStore::pop_pending_event);
 	ClassDB::bind_method(D_METHOD("finish_transaction"), &InAppStore::finish_transaction);
 	ClassDB::bind_method(D_METHOD("set_auto_finish_transaction"), &InAppStore::set_auto_finish_transaction);
+
+	ADD_SIGNAL(MethodInfo("transaction_finished", PropertyInfo(Variant::DICTIONARY, "event_data")));
+	ADD_SIGNAL(MethodInfo("transaction_error", PropertyInfo(Variant::DICTIONARY, "event_data")));
 }
 
 Error InAppStore::request_product_info(Variant p_params) {
@@ -360,19 +421,14 @@ Error InAppStore::purchase(Variant p_params) {
 	return [products_request_delegate purchaseProductWithProductID:pid];
 }
 
-int InAppStore::get_pending_event_count() {
-	return pending_events.size();
-}
+void InAppStore::send_signal(bool is_error, Dictionary data) {
+	printf("sending signal. is_error: %d\n", is_error);
 
-Variant InAppStore::pop_pending_event() {
-	Variant front = pending_events.front()->get();
-	pending_events.pop_front();
-
-	return front;
-}
-
-void InAppStore::_post_event(Variant p_event) {
-	pending_events.push_back(p_event);
+	if (is_error) {
+		emit_signal("transaction_error", data);
+	} else {
+		emit_signal("transaction_finished", data);
+	}
 }
 
 void InAppStore::_record_purchase(String product_id) {
@@ -390,8 +446,8 @@ InAppStore::InAppStore() {
 	ERR_FAIL_COND(instance != NULL);
 	instance = this;
 
-	products_request_delegate = [[GodotProductsDelegate alloc] init];
-	transactions_observer = [[GodotTransactionsObserver alloc] init];
+	products_request_delegate = [[GodotProductsDelegate alloc] initWithInAppStore:this];
+	transactions_observer = [[GodotTransactionsObserver alloc] initWithInAppStore:this];
 
 	[[SKPaymentQueue defaultQueue] addTransactionObserver:transactions_observer];
 }
