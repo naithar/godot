@@ -320,6 +320,8 @@ InAppStore *InAppStore::instance = NULL;
 				NSString *pidString = transaction.payment.productIdentifier;
 				NSString *errorString = transaction.error.localizedDescription;
 
+				NSLog(@"error from transaction: %@", transaction.error);
+
 				NSLog(@"received error for pid: %@, with description: %@", pidString, errorString);
 
 				Dictionary ret;
