@@ -18,6 +18,10 @@ iphone_lib = [
     "device_metrics.m",
     "keyboard_input_view.mm",
     "native_video_view.m",
+    "metal/rasterizer_canvas_metal.mm",
+    "metal/rasterizer_metal.mm",
+    "metal/rasterizer_scene_metal.mm",
+    "metal/rasterizer_storage_metal.mm",
 ]
 
 env_ios = env.Clone()
