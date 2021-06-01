@@ -33,7 +33,13 @@
 #include "core/project_settings.h"
 #import "godot_view.h"
 #import "godot_view_renderer.h"
-#import "keyboard_input_view.h"
+
+#ifndef TVOS_ENABLED
+#import "keyboard_input_view_ios.h"
+#else
+#import "keyboard_input_view_tvos.h"
+#endif
+
 #import "native_video_view.h"
 #include "os_iphone.h"
 
@@ -101,9 +107,11 @@
 	[self observeKeyboard];
 	[self displayLoadingOverlay];
 
+#ifndef TVOS_ENABLED
 	if (@available(iOS 11.0, *)) {
 		[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
 	}
+#endif
 }
 
 - (void)observeKeyboard {
@@ -112,6 +120,7 @@
 	[self.view addSubview:self.keyboardView];
 
 	printf("******** adding observer for keyboard show/hide\n");
+#ifndef TVOS_ENABLED
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(keyboardOnScreen:)
@@ -122,6 +131,7 @@
 			   selector:@selector(keyboardHidden:)
 				   name:UIKeyboardDidHideNotification
 				 object:nil];
+#endif
 }
 
 - (void)displayLoadingOverlay {
@@ -221,6 +231,8 @@
 	}
 }
 
+#ifndef TVOS_ENABLED
+
 // MARK: Keyboard
 
 - (void)keyboardOnScreen:(NSNotification *)notification {
@@ -240,6 +252,8 @@
 		OSIPhone::get_singleton()->set_virtual_keyboard_height(0);
 	}
 }
+
+#endif
 
 // MARK: Native Video Player
 

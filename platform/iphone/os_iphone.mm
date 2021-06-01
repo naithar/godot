@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef IPHONE_ENABLED
+#ifdef UIKIT_ENABLED
 
 #include "os_iphone.h"
 
@@ -48,7 +48,13 @@
 #import "app_delegate.h"
 #import "device_metrics.h"
 #import "godot_view.h"
-#import "keyboard_input_view.h"
+
+#ifndef TVOS_ENABLED
+#import "keyboard_input_view_ios.h"
+#else
+#import "keyboard_input_view_tvos.h"
+#endif
+
 #import "native_video_view.h"
 #import "view_controller.h"
 
@@ -63,10 +69,47 @@ extern bool gles3_available; // from gl_view.mm
 // so we use this as a hack to ensure certain code is called before
 // everything else, but after all units are initialized.
 typedef void (*init_callback)();
+HashMap<String, void *> OSIPhone::dynamic_symbol_lookup_table;
+
+#ifndef TVOS_ENABLED
 static init_callback *ios_init_callbacks = NULL;
 static int ios_init_callbacks_count = 0;
 static int ios_init_callbacks_capacity = 0;
-HashMap<String, void *> OSIPhone::dynamic_symbol_lookup_table;
+#else
+static init_callback *tvos_init_callbacks = NULL;
+static int tvos_init_callbacks_count = 0;
+static int tvos_init_callbacks_capacity = 0;
+#endif
+
+#ifndef TVOS_ENABLED
+void add_ios_init_callback(init_callback cb) {
+	if (ios_init_callbacks_count == ios_init_callbacks_capacity) {
+		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * 32);
+		if (new_ptr) {
+			ios_init_callbacks = (init_callback *)(new_ptr);
+			ios_init_callbacks_capacity += 32;
+		}
+	}
+	if (ios_init_callbacks_capacity > ios_init_callbacks_count) {
+		ios_init_callbacks[ios_init_callbacks_count] = cb;
+		++ios_init_callbacks_count;
+	}
+}
+#else
+void add_tvos_init_callback(init_callback cb) {
+	if (tvos_init_callbacks_count == tvos_init_callbacks_capacity) {
+		void *new_ptr = realloc(tvos_init_callbacks, sizeof(cb) * 32);
+		if (new_ptr) {
+			tvos_init_callbacks = (init_callback *)(new_ptr);
+			tvos_init_callbacks_capacity += 32;
+		}
+	}
+	if (tvos_init_callbacks_capacity > tvos_init_callbacks_count) {
+		tvos_init_callbacks[tvos_init_callbacks_count] = cb;
+		++tvos_init_callbacks_count;
+	}
+}
+#endif
 
 int OSIPhone::get_video_driver_count() const {
 	return 2;
@@ -110,7 +153,11 @@ int OSIPhone::get_current_video_driver() const {
 }
 
 void OSIPhone::start() {
+#ifndef TVOS_ENABLED
 	godot_ios_plugins_initialize();
+#else
+	godot_tvos_plugins_initialize();
+#endif
 
 	Main::start();
 
@@ -178,8 +225,13 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	input = memnew(InputDefault);
 
-	ios = memnew(iOS);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
+#ifdef TVOS_ENABLED
+	platform = memnew(tvOS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("tvOS", platform));
+#else
+	platform = memnew(iOS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", platform));
+#endif
 
 	joypad_iphone = memnew(JoypadIPhone);
 
@@ -333,11 +385,15 @@ void OSIPhone::finalize() {
 		memdelete(input);
 	}
 
-	if (ios) {
-		memdelete(ios);
+	if (platform) {
+		memdelete(platform);
 	}
 
+#ifndef TVOS_ENABLED
 	godot_ios_plugins_deinitialize();
+#else
+	godot_tvos_plugins_deinitialize();
+#endif
 
 	visual_server->finish();
 	memdelete(visual_server);
@@ -374,7 +430,11 @@ void OSIPhone::set_window_title(const String &p_title) {
 void OSIPhone::alert(const String &p_alert, const String &p_title) {
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
+#ifndef TVOS_ENABLED
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
+#else
+	tvOS::alert(utf8_alert.get_data(), utf8_title.get_data());
+#endif
 }
 
 // MARK: Dynamic Libraries
@@ -489,7 +549,7 @@ String OSIPhone::get_name() const {
 }
 
 String OSIPhone::get_model_name() const {
-	String model = ios->get_model();
+	String model = platform->get_model();
 	if (model != "") {
 		return model;
 	}
@@ -502,6 +562,7 @@ Size2 OSIPhone::get_window_size() const {
 }
 
 int OSIPhone::get_screen_dpi(int p_screen) const {
+#ifndef TVOS_ENABLED
 	struct utsname systemInfo;
 	uname(&systemInfo);
 
@@ -536,10 +597,13 @@ int OSIPhone::get_screen_dpi(int p_screen) const {
 		default:
 			return 72;
 	}
+#else
+	return 96;
+#endif
 }
 
 Rect2 OSIPhone::get_window_safe_area() const {
-	if (@available(iOS 11, *)) {
+	if (@available(iOS 11, tvOS 11, *)) {
 		UIEdgeInsets insets = UIEdgeInsetsZero;
 		UIView *view = AppDelegate.viewController.godotView;
 
@@ -648,21 +712,8 @@ bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "mobile";
 }
 
-void add_ios_init_callback(init_callback cb) {
-	if (ios_init_callbacks_count == ios_init_callbacks_capacity) {
-		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * 32);
-		if (new_ptr) {
-			ios_init_callbacks = (init_callback *)(new_ptr);
-			ios_init_callbacks_capacity += 32;
-		}
-	}
-	if (ios_init_callbacks_capacity > ios_init_callbacks_count) {
-		ios_init_callbacks[ios_init_callbacks_count] = cb;
-		++ios_init_callbacks_count;
-	}
-}
-
 OSIPhone::OSIPhone(String p_data_dir) {
+#ifndef TVOS_ENABLED
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -670,6 +721,15 @@ OSIPhone::OSIPhone(String p_data_dir) {
 	ios_init_callbacks = NULL;
 	ios_init_callbacks_count = 0;
 	ios_init_callbacks_capacity = 0;
+#else
+	for (int i = 0; i < tvos_init_callbacks_count; ++i) {
+		tvos_init_callbacks[i]();
+	}
+	free(tvos_init_callbacks);
+	tvos_init_callbacks = NULL;
+	tvos_init_callbacks_count = 0;
+	tvos_init_callbacks_capacity = 0;
+#endif
 
 	main_loop = NULL;
 	visual_server = NULL;
@@ -727,5 +787,20 @@ void OSIPhone::on_focus_in() {
 		audio_driver.start();
 	}
 }
+
+#ifdef TVOS_ENABLED
+
+int OSIPhone::joy_id_for_name(const String &p_name) {
+	return joypad_iphone->joy_id_for_name(p_name);
+}
+
+bool OSIPhone::get_overrides_menu_button() const {
+	return overrides_menu_button;
+}
+
+void OSIPhone::set_overrides_menu_button(bool p_flag) {
+	overrides_menu_button = p_flag;
+}
+#endif
 
 #endif

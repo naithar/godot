@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+Import("env")
+
+def shared(path):
+    return "../iphone/" + path
+
+tvos_lib = [
+    shared("godot_iphone.mm"),
+    shared("os_iphone.mm"),
+    shared("main.m"),
+    shared("app_delegate.mm"),
+    shared("view_controller.mm"),
+    "tvos.mm",
+    shared("joypad_iphone.mm"),
+    shared("godot_view.mm"),
+    shared("display_layer.mm"),
+    shared("godot_app_delegate.m"),
+    shared("godot_view_renderer.mm"),
+    "godot_gesture_recognizer_tvos.mm",
+    "keyboard_input_view_tvos.mm",
+    shared("native_video_view.m"),
+]
+
+env_tvos = env.Clone()
+tvos_lib = env_tvos.add_library("tvos", tvos_lib)
+
+# (tvOS) Enable module support
+env_tvos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+
+def combine_libs(target=None, source=None, env=None):
+    lib_path = target[0].srcnode().abspath
+    if "osxcross" in env:
+        libtool = "$TVOSPATH/usr/bin/${tvos_triple}libtool"
+    else:
+        libtool = "$TVOSPATH/usr/bin/libtool"
+    env.Execute(
+        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+    )
+
+
+combine_command = env_tvos.Command("#bin/libgodot" + env_tvos["LIBSUFFIX"], [tvos_lib] + env_tvos["LIBS"], combine_libs)

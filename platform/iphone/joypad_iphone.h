@@ -30,6 +30,8 @@
 
 #import <GameController/GameController.h>
 
+class String;
+
 @interface JoypadIPhoneObserver : NSObject
 
 - (void)startObserving;
@@ -47,4 +49,8 @@ public:
 	~JoypadIPhone();
 
 	void start_processing();
+
+#ifdef TVOS_ENABLED
+	int joy_id_for_name(const String &p_name);
+#endif
 };

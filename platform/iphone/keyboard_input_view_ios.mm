@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  keyboard_input_view.mm                                               */
+/*  keyboard_input_view_ios.mm                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "keyboard_input_view.h"
+#import "keyboard_input_view_ios.h"
 
 #include "core/os/keyboard.h"
 #include "os_iphone.h"

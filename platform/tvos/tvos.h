@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  keyboard_input_view.h                                                */
+/*  tvos.h                                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#ifndef TVOS_H
+#define TVOS_H
 
-@interface GodotKeyboardInputView : UITextView
+#include "core/object.h"
 
-- (BOOL)becomeFirstResponderWithString:(NSString *)existingString multiline:(BOOL)flag cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
+class tvOS : public Object {
+	GDCLASS(tvOS, Object);
 
-@end
+	static void _bind_methods();
+
+public:
+	static void alert(const char *p_alert, const char *p_title);
+
+	String get_model() const;
+	String get_rate_url(int p_app_id) const;
+
+	bool get_overrides_menu_button() const;
+	void set_overrides_menu_button(bool p_flag);
+
+	tvOS();
+};
+
+#endif

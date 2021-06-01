@@ -37,19 +37,13 @@
 
 #import <UIKit/UIKit.h>
 
-@interface GodotViewGestureRecognizer : UIGestureRecognizer {
-@private
-
-	// Timer used to delay begin touch message.
-	// Should work as simple emulation of UIDelayedAction
-	NSTimer *delayTimer;
-
-	// Delayed touch parameters
-	NSSet *delayedTouches;
-	UIEvent *delayedEvent;
-}
+@interface GodotViewGestureRecognizer : UIGestureRecognizer
 
 @property(nonatomic, readonly, assign) NSTimeInterval delayTimeInterval;
+
+#ifdef TVOS_ENABLED
+@property(nonatomic, readonly, assign) BOOL overridesRemoteButtons;
+#endif
 
 - (instancetype)init;
 

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef IPHONE_ENABLED
+#ifdef UIKIT_ENABLED
 
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
@@ -38,14 +38,22 @@
 #include "drivers/unix/os_unix.h"
 #include "joypad_iphone.h"
 
-#include "ios.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
+#ifdef TVOS_ENABLED
+#include "tvos.h"
+
+extern void godot_tvos_plugins_initialize();
+extern void godot_tvos_plugins_deinitialize();
+#else
+#include "ios.h"
+
 extern void godot_ios_plugins_initialize();
 extern void godot_ios_plugins_deinitialize();
+#endif
 
 class OSIPhone : public OS_Unix {
 private:
@@ -56,7 +64,12 @@ private:
 
 	AudioDriverCoreAudio audio_driver;
 
-	iOS *ios;
+#ifdef TVOS_ENABLED
+	tvOS *platform;
+	bool overrides_menu_button = true;
+#else
+	iOS *platform;
+#endif
 
 	JoypadIPhone *joypad_iphone;
 
@@ -183,6 +196,13 @@ public:
 
 	void on_focus_out();
 	void on_focus_in();
+
+#ifdef TVOS_ENABLED
+	int joy_id_for_name(const String &p_name);
+
+	bool get_overrides_menu_button() const;
+	void set_overrides_menu_button(bool p_flag);
+#endif
 };
 
 #endif // OS_IPHONE_H

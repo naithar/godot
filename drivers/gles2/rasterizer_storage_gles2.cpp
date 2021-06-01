@@ -94,7 +94,7 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 #include <dlfcn.h> // needed to load extensions
 #endif
 
-#ifdef IPHONE_ENABLED
+#ifdef UIKIT_ENABLED
 
 #include <OpenGLES/ES2/glext.h>
 //void *glRenderbufferStorageMultisampleAPPLE;
@@ -5913,7 +5913,7 @@ void RasterizerStorageGLES2::initialize() {
 #ifndef GLES_OVER_GL
 	//Manually load extensions for android and ios
 
-#ifdef IPHONE_ENABLED
+#ifdef UIKIT_ENABLED
 	// appears that IPhone doesn't need to dlopen TODO: test this rigorously before removing
 	//void *gles2_lib = dlopen(NULL, RTLD_LAZY);
 	//glRenderbufferStorageMultisampleAPPLE = dlsym(gles2_lib, "glRenderbufferStorageMultisampleAPPLE");

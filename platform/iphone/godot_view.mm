@@ -41,12 +41,15 @@
 #import "godot_view_gesture_recognizer.h"
 #import "godot_view_renderer.h"
 
+#ifndef TVOS_ENABLED
 #import <CoreMotion/CoreMotion.h>
-
 static const int max_touches = 8;
+#endif
 
 @interface GodotView () {
+#ifndef TVOS_ENABLED
 	UITouch *godot_touches[max_touches];
+#endif
 }
 
 @property(assign, nonatomic) BOOL isActive;
@@ -60,7 +63,9 @@ static const int max_touches = 8;
 
 @property(strong, nonatomic) CALayer<DisplayLayer> *renderingLayer;
 
+#ifndef TVOS_ENABLED
 @property(strong, nonatomic) CMMotionManager *motionManager;
+#endif
 
 @property(strong, nonatomic) GodotViewGestureRecognizer *delayGestureRecognizer;
 
@@ -120,10 +125,12 @@ static const int max_touches = 8;
 		self.renderingLayer = nil;
 	}
 
+#ifndef TVOS_ENABLED
 	if (self.motionManager) {
 		[self.motionManager stopDeviceMotionUpdates];
 		self.motionManager = nil;
 	}
+#endif
 
 	if (self.displayLink) {
 		[self.displayLink invalidate];
@@ -143,6 +150,7 @@ static const int max_touches = 8;
 - (void)godot_commonInit {
 	self.contentScaleFactor = [UIScreen mainScreen].nativeScale;
 
+#ifndef TVOS_ENABLED
 	[self initTouches];
 
 	// Configure and start accelerometer
@@ -155,6 +163,7 @@ static const int max_touches = 8;
 			self.motionManager = nil;
 		}
 	}
+#endif
 
 	// Initialize delay gesture recognizer
 	GodotViewGestureRecognizer *gestureRecognizer = [[GodotViewGestureRecognizer alloc] init];
@@ -204,7 +213,9 @@ static const int max_touches = 8;
 		self.animationTimer = nil;
 	}
 
+#ifndef TVOS_ENABLED
 	[self clearTouches];
+#endif
 }
 
 // Updates the OpenGL view when the timer fires
@@ -244,7 +255,9 @@ static const int max_touches = 8;
 		}
 	}
 
+#ifndef TVOS_ENABLED
 	[self handleMotion];
+#endif
 	[self.renderer renderOnView:self];
 
 	[self.renderingLayer stopRenderDisplayLayer];
@@ -280,7 +293,7 @@ static const int max_touches = 8;
 	[super layoutSubviews];
 }
 
-// MARK: - Input
+#ifndef TVOS_ENABLED
 
 // MARK: Touches
 
@@ -477,5 +490,62 @@ static const int max_touches = 8;
 		} break;
 	}
 }
+
+#else
+
+// MARK: Menu Button
+
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	if (!self.delayGestureRecognizer.overridesRemoteButtons) {
+		return [super pressesEnded:presses withEvent:event];
+	}
+
+	NSArray *tlist = [event.allPresses allObjects];
+
+	for (UIPress *press in tlist) {
+		if ([presses containsObject:press] && press.type == UIPressTypeMenu) {
+			int joy_id = OSIPhone::get_singleton()->joy_id_for_name("Remote");
+			OSIPhone::get_singleton()->joy_button(joy_id, JOY_START, true);
+		} else {
+			[super pressesBegan:presses withEvent:event];
+		}
+	}
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	if (!self.delayGestureRecognizer.overridesRemoteButtons) {
+		return [super pressesEnded:presses withEvent:event];
+	}
+
+	NSArray *tlist = [presses allObjects];
+
+	for (UIPress *press in tlist) {
+		if ([presses containsObject:press] && press.type == UIPressTypeMenu) {
+			int joy_id = OSIPhone::get_singleton()->joy_id_for_name("Remote");
+			OSIPhone::get_singleton()->joy_button(joy_id, JOY_START, false);
+		} else {
+			[super pressesEnded:presses withEvent:event];
+		}
+	}
+}
+
+- (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+	if (!self.delayGestureRecognizer.overridesRemoteButtons) {
+		return [super pressesEnded:presses withEvent:event];
+	}
+
+	NSArray *tlist = [event.allPresses allObjects];
+
+	for (UIPress *press in tlist) {
+		if ([presses containsObject:press] && press.type == UIPressTypeMenu) {
+			int joy_id = OSIPhone::get_singleton()->joy_id_for_name("Remote");
+			OSIPhone::get_singleton()->joy_button(joy_id, JOY_START, false);
+		} else {
+			[super pressesCancelled:presses withEvent:event];
+		}
+	}
+}
+
+#endif
 
 @end

@@ -36,6 +36,12 @@
 #include "main/main.h"
 #include "os_iphone.h"
 
+@interface JoypadIPhoneObserver (JoypadSearch)
+
+- (int)getJoyIdForControllerName:(NSString *)controllerName;
+
+@end
+
 JoypadIPhone::JoypadIPhone() {
 	observer = [[JoypadIPhoneObserver alloc] init];
 	[observer startObserving];
@@ -53,6 +59,20 @@ void JoypadIPhone::start_processing() {
 		[observer startProcessing];
 	}
 }
+
+#ifdef TVOS_ENABLED
+int JoypadIPhone::joy_id_for_name(const String &p_name) {
+	if (!observer) {
+		return -1;
+	}
+
+	@autoreleasepool {
+		NSString *controllerName = [[NSString alloc] initWithUTF8String:p_name.utf8().get_data()];
+
+		return [observer getJoyIdForControllerName:controllerName];
+	}
+}
+#endif
 
 @interface JoypadIPhoneObserver ()
 
@@ -138,6 +158,21 @@ void JoypadIPhone::start_processing() {
 	for (NSNumber *key in keys) {
 		int joy_id = [key intValue];
 		return joy_id;
+	};
+
+	return -1;
+};
+
+- (int)getJoyIdForControllerName:(NSString *)controllerName {
+	NSArray *keys = [self.connectedJoypads allKeys];
+
+	for (NSNumber *key in keys) {
+		int joy_id = [key intValue];
+		GCController *controller = self.connectedJoypads[key];
+
+		if ([controller.vendorName containsString:controllerName]) {
+			return joy_id;
+		}
 	};
 
 	return -1;
@@ -290,7 +325,7 @@ void JoypadIPhone::start_processing() {
 						gamepad.dpad.left.isPressed);
 				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
 						gamepad.dpad.right.isPressed);
-			};
+			}
 
 			InputDefault::JoyAxis jx;
 			jx.min = -1;

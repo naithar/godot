@@ -37,7 +37,9 @@
 #include "servers/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>
+#ifndef TVOS_ENABLED
 #import <CoreMotion/CoreMotion.h>
+#endif
 #import <GameController/GameController.h>
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>

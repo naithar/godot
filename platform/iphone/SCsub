@@ -14,9 +14,9 @@ iphone_lib = [
     "display_layer.mm",
     "godot_app_delegate.m",
     "godot_view_renderer.mm",
-    "godot_view_gesture_recognizer.mm",
+    "godot_view_gesture_recognizer_ios.mm",
     "device_metrics.m",
-    "keyboard_input_view.mm",
+    "keyboard_input_view_ios.mm",
     "native_video_view.m",
 ]
 

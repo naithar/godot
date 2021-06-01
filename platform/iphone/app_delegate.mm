@@ -84,11 +84,13 @@ static ViewController *mainViewController = nil;
 	// Show the window
 	[self.window makeKeyAndVisible];
 
+#ifndef TVOS_ENABLED
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(onAudioInterruption:)
 				   name:AVAudioSessionInterruptionNotification
 				 object:[AVAudioSession sharedInstance]];
+#endif
 
 	mainViewController = viewController;
 
@@ -101,6 +103,7 @@ static ViewController *mainViewController = nil;
 	return TRUE;
 }
 
+#ifndef TVOS_ENABLED
 - (void)onAudioInterruption:(NSNotification *)notification {
 	if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
 		if ([[notification.userInfo valueForKey:AVAudioSessionInterruptionTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionInterruptionTypeBegan]]) {
@@ -112,6 +115,7 @@ static ViewController *mainViewController = nil;
 		}
 	}
 }
+#endif
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
 	if (OS::get_singleton()->get_main_loop()) {
