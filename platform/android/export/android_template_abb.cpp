@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  android_template_abb.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,4 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/image_loader.h"
-#include "core/io/marshalls.h"
-#include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
-#include "core/os/os.h"
-#include "core/templates/safe_refcount.h"
-#include "core/version.h"
-#include "drivers/png/png_driver_common.h"
-#include "editor/editor_export.h"
-#include "editor/editor_log.h"
-#include "editor/editor_node.h"
-#include "editor/editor_settings.h"
-#include "main/splash.gen.h"
-#include "platform/android/export/gradle_export_util.h"
-#include "platform/android/plugin/godot_plugin_config.h"
-
-#include <string.h>
-
-#include "android_template_abb.h"
-#include "android_template_apk.h"
-
-void register_android_exporter() {
-	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = "*.exe";
-	}
-
-	EDITOR_DEF("export/android/android_sdk_path", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
-	EDITOR_DEF("export/android/debug_keystore", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore", PROPERTY_HINT_GLOBAL_FILE, "*.keystore,*.jks"));
-	EDITOR_DEF("export/android/debug_keystore_user", "androiddebugkey");
-	EDITOR_DEF("export/android/debug_keystore_pass", "android");
-	EDITOR_DEF("export/android/force_system_user", false);
-
-	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
-
-	Ref<EditorExportPlatformAndroidAPK> exporterAPK = Ref<EditorExportPlatformAndroidAPK>(memnew(EditorExportPlatformAndroidAPK));
-    Ref<EditorExportPlatformAndroidABB> exporterABB = Ref<EditorExportPlatformAndroidABB>(memnew(EditorExportPlatformAndroidABB));
-	EditorExport::get_singleton()->add_export_platform(exporterAPK);
-    EditorExport::get_singleton()->add_export_platform(exporterABB);
-}
